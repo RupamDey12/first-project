@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Rupam Dey — Portfolio V6.5</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#07070c; --surface:#0f1316; --muted:#9aa4af; --accent:#00eaff; --glass:rgba(255,255,255,0.04); --text:#e9f0f6;
+}
+[data-theme="light"]{
+  --bg:#f5f7fb; --surface:#ffffff; --muted:#5b6b78; --accent:#0366d6; --glass:rgba(0,0,0,0.04); --text:#0b1220;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,Arial,-apple-system; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; cursor:none;}
+a{color:var(--accent);text-decoration:none}
+.app{min-height:100vh;position:relative;overflow-x:hidden}
+
+/* ✨ Gemini Flow Animation Keyframes */
+@keyframes geminiFlow {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Canvas background */
+#bgCanvas{position:fixed;inset:0;z-index:-2;}
+
+/* header/navbar */
+.header {
+  position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;z-index:40;
+  pointer-events:none;
+}
+.brand, .controls {pointer-events:auto;}
+.brand {display:flex;gap:12px;align-items:center}
+/* ✨ Added Gemini Flow to the Logo */
+.logo {width:48px;height:48px;border-radius:12px;background:linear-gradient(90deg, var(--accent), #b444ff, var(--accent));background-size:200% auto;animation:geminiFlow 4s linear infinite;display:grid;place-items:center;font-weight:700;color:#fff;padding:6px;box-shadow:0 8px 26px rgba(0,0,0,0.5); border: none;}
+
+/* controls */
+.controls {display:flex;gap:10px;align-items:center}
+.btn {background:var(--surface);border:1px solid var(--glass);padding:8px 12px;border-radius:10px;color:var(--text);font-weight:600;backdrop-filter:blur(6px); cursor:none; display:inline-block;}
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;padding:0;background:var(--surface);border:1px solid var(--glass);border-radius:10px;color:var(--text);backdrop-filter:blur(6px);}
+
+/* 🧭 Left Side Navigation */
+.side-nav {
+  position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+  background: var(--surface); 
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--glass); z-index: 100000;
+  transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+  padding: 30px 24px; display: flex; flex-direction: column;
+}
+.side-nav.active { transform: translateX(0); }
+.side-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 15px; border-bottom: 1px solid var(--glass); }
+.side-nav-header h3 { margin: 0; font-size: 1.2rem; color: var(--accent); }
+.nav-links { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 25px; margin: 0; }
+.nav-links a { color: var(--text); font-size: 1.2rem; font-weight: 600; transition: color 0.3s; cursor: none; }
+.nav-links a:hover { color: var(--accent); }
+.nav-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+.nav-overlay.active { opacity: 1; pointer-events: auto; }
+
+/* hero */
+.hero {
+  min-height:90vh; display:flex; align-items:center; justify-content:center;
+  padding:48px 18px; position:relative; z-index:1;
+  transition:transform .6s cubic-bezier(.2,.9,.3,1);
+}
+.hero-inner {display:grid;grid-template-columns:1fr 380px;gap:34px;align-items:center;width:100%;max-width:1200px}
+@media (max-width:900px){ .hero-inner{grid-template-columns:1fr} .hero{padding-top:120px} }
+
+/* left intro */
+.intro .tag {color:var(--muted);font-size:13px;margin-bottom:12px}
+.intro h1 {font-size:44px;margin:0;line-height:1}
+/* ✨ Added Gemini Flow to the Hero Name */
+.highlight {background:linear-gradient(90deg, var(--accent), #b444ff, var(--accent));background-size:200% auto;animation:geminiFlow 4s linear infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* 👨‍💻 Terminals */
+.terminal {
+  margin-top:14px;background:var(--surface);padding:12px;border-radius:10px;border:1px solid var(--glass);
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;color:var(--muted);
+  box-shadow:0 12px 30px rgba(0,0,0,0.6); display:flex; flex-direction:column; cursor:none;
+}
+.terminal-hero { height: 160px; justify-content: center;}
+.terminal-bottom { height: 300px; max-width: 800px; margin: 0 auto; }
+#bottomTermHistory { overflow-y: auto; flex-grow: 1; margin-bottom: 5px; font-size: 13px; white-space: pre-wrap; display: flex; flex-direction: column; justify-content: flex-end; }
+.term-input-row { display: flex; align-items: center; font-size: 13px; }
+.term-prompt { color: var(--accent); margin-right: 8px; font-weight: bold; }
+#bottomTermInput { background: transparent; border: none; color: var(--text); font-family: inherit; font-size: 13px; flex: 1; outline: none; cursor:none; }
+
+/* right profile card */
+.profile {
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;border:1px solid var(--glass);display:flex;gap:14px;align-items:center;backdrop-filter:blur(10px)
+}
+/* ✨ Added Gemini Flow to the Profile Avatar */
+.avatar {width:104px;height:104px;border-radius:12px;background:linear-gradient(90deg, var(--accent), #b444ff, var(--accent));background-size:200% auto;animation:geminiFlow 4s linear infinite;display:grid;place-items:center;overflow:hidden;}
+.avatar img{width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.06)}
+.profile-info h3{margin:0;font-size:20px}
+.profile-info p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+/* sections */
+.section {max-width:1100px;margin:60px auto;padding:20px}
+.section .section-title {font-size:22px;margin-bottom:14px;border-left:4px solid var(--accent);padding-left:10px}
+.grid {display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:18px}
+
+/* cards */
+.card {background:var(--surface);border-radius:12px;padding:18px;border:1px solid var(--glass);backdrop-filter:blur(8px);transition:transform .25s ease, box-shadow .25s ease; cursor:none;}
+.card h4{margin:0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.card p{margin:0;color:var(--muted); font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;}
+
+/* 🧮 Algorithm Visualizer */
+.algo-container { display: flex; align-items: flex-end; justify-content: center; height: 60px; gap: 3px; margin-top: 15px; }
+.algo-bar { width: 15px; background: var(--muted); border-radius: 2px 2px 0 0; transition: height 0.1s ease, background 0.1s ease; }
+
+/* 3D tilt helper */
+.tilt {transform-style:preserve-3d; will-change:transform; perspective:1000px}
+
+/* slider */
+.slider {display:flex;gap:16px;overflow-x:auto;padding-bottom:10px; scroll-behavior: smooth;}
+.slide {min-width:280px; max-width: 300px; scroll-snap-align:center;}
+
+/* contact */
+.contact-wrapper { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+.contact-info { display: flex; flex-direction: column; justify-content: center; }
+.contact-info h4 { font-size: 1.5rem; margin-bottom: 10px; color: var(--accent); }
+.contact-info p { color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+.pro-form { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: flex; gap: 16px; }
+.form-row .input { flex: 1; }
+.input, textarea { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--glass); background: transparent; color: var(--text); cursor: none; font-family: inherit; margin: 0;}
+.input:focus, textarea:focus { outline: none; border-color: var(--accent); background: rgba(255, 255, 255, 0.02); }
+/* ✨ Added Gemini Flow to the Send Button */
+.btn.send { align-self: flex-start; padding: 12px 24px; margin-top: 5px; background:linear-gradient(90deg, var(--accent), #b444ff, var(--accent)); background-size:200% auto; animation:geminiFlow 4s linear infinite; color:#fff; border:none; font-weight:700; }
+
+/* floating socials */
+.floating {position:fixed;left:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:30}
+.floating a{width:44px;height:44px;border-radius:10px;background:var(--surface);display:grid;place-items:center;border:1px solid var(--glass);color:var(--text); cursor:none;}
+
+/* cursor glow */
+.cursor {
+  position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:screen;
+  width:28px;height:28px;border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(0,234,255,0.9) 0%, rgba(0,234,255,0.15) 30%, transparent 60%);
+  transition:width .12s,height .12s,opacity .12s, transform .04s;
+  opacity:0.9;
+}
+
+/* back to top */
+.back-top{position:fixed;right:14px;bottom:18px;background:var(--surface);padding:10px;border-radius:10px;border:1px solid var(--glass);display:none;z-index:50; cursor:none;}
+
+/* transitions */
+.section, .hero {transition:opacity .6s ease, transform .6s cubic-bezier(.2,.9,.3,1)}
+.visible {opacity:1;transform:none}
+.hidden {opacity:0;transform:translateY(20px)}
+
+footer{padding:30px;text-align:center;color:var(--muted)}
+
+@media (max-width:768px) {
+    * { cursor: auto !important; }
+    .cursor { display: none; }
+    
+    .header {
+        left: 0; right: 0; top: 0; padding: 12px 20px;
+        background: var(--surface);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--glass);
+    }
+    .floating { display: none; }
+    .contact-wrapper { grid-template-columns: 1fr; }
+    .form-row { flex-direction: column; gap: 16px; }
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="app">
+  <canvas id="bgCanvas"></canvas>
+
+  <div id="navOverlay" class="nav-overlay"></div>
+  <nav id="sideNav" class="side-nav">
+    <div class="side-nav-header">
+      <h3>Menu</h3>
+      <button class="icon-btn hover-target" id="closeNav">✕</button>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#home" class="hover-target nav-item">Home</a></li>
+      <li><a href="#projects" class="hover-target nav-item">Projects</a></li>
+      <li><a href="#skills" class="hover-target nav-item">Skills</a></li>
+      <li><a href="#contact" class="hover-target nav-item">Contact</a></li>
+      <li><a href="#terminal-section" class="hover-target nav-item">Terminal</a></li>
+    </ul>
+  </nav>
+
+  <div class="header">
+    <div class="brand">
+      <div class="logo hover-target" id="logoBtn">RD</div>
+    </div>
+    <div class="controls">
+      <button class="btn hover-target" id="downloadResume">Resume</button>
+      <button class="icon-btn hover-target" id="themeToggle" title="Toggle theme">🌓</button>
+    </div>
+  </div>
+
+  <div class="floating" aria-hidden="true">
+    <a href="https://github.com/RupamDey12" target="_blank" class="hover-target" title="GitHub">G</a>
+    <a href="https://www.linkedin.com/in/rupam-dey-8055a7327" target="_blank" class="hover-target" title="LinkedIn">in</a>
+    <a href="https://www.instagram.com/rupam.174" target="_blank" class="hover-target" title="Instagram">IG</a>
+  </div>
+
+  <div id="customCursor" class="cursor" aria-hidden="true"></div>
+
+  <header class="hero" id="home">
+    <div class="hero-inner">
+      <div class="intro tilt" id="introCard">
+        <div class="tag">Full Stack Developer • CSE Student</div>
+        <h1>Hi, I'm <span class="highlight">Rupam Dey</span></h1>
+
+        <div class="terminal terminal-hero hover-target" aria-live="polite">
+            <div id="typingLine"><code id="typeText"></code><span id="blink">▌</span></div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn hover-target" onclick="scrollToSection('#projects')">Projects</button>
+          <button class="btn hover-target" onclick="scrollToSection('#contact')">Contact</button>
+        </div>
+      </div>
+
+      <aside class="profile tilt hover-target" id="profileCard" style="justify-self:center">
+        <div class="avatar"><img src="https://avatars.githubusercontent.com/RupamDey12" alt="avatar" onerror="this.src='https://i.pravatar.cc/150?img=3'"></div>
+        <div class="profile-info">
+          <h3>Rupam Dey</h3>
+          <p>Curious and eager to learn new things.</p>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <a class="btn hover-target" href="https://github.com/RupamDey12" target="_blank">GitHub</a>
+            <a class="btn hover-target" href="https://www.linkedin.com/in/rupam-dey-8055a7327" target="_blank">LinkedIn</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <section class="section" id="projects">
+    <div class="section-title">Live GitHub Repositories</div>
+    <div class="slider" id="projectSlider" aria-live="polite">
+        <div style="padding: 20px; color: var(--muted);">Fetching latest projects from GitHub...</div>
+    </div>
+  </section>
+
+  <section class="section" id="skills">
+    <div class="section-title">Skills & Analytics</div>
+    <div class="grid">
+      <div class="card tilt hover-target"><h4>Python</h4><p>Data, ML, scripting</p></div>
+      <div class="card tilt hover-target"><h4>Web (HTML/CSS/JS)</h4><p>Frontend & APIs</p></div>
+      <div class="card tilt hover-target"><h4>C / C++</h4><p>DSA & systems</p></div>
+      <div class="card tilt hover-target" style="grid-column: 1 / -1; max-width: 400px;">
+          <h4>Live Sort Algorithm</h4>
+          <p>Real-time Bubble Sort visualization</p>
+          <div class="algo-container" id="algoContainer"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="section-title">Get In Touch</div>
+    <div class="contact-wrapper">
+      
+      <div class="card tilt hover-target contact-info">
+        <h4>Let's Connect</h4>
+        <p>I am currently open to new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!</p>
+        <div class="muted" style="margin-bottom: 8px;">Direct Email</div>
+        <a class="btn hover-target" href="mailto:rupamdeyrupamdey1@gmail.com" style="margin-top: 0; text-align: center;">rupamdeyrupamdey1@gmail.com</a>
+      </div>
+
+      <div class="card hover-target">
+        <form class="pro-form" action="https://formspree.io/f/mqedngzd" method="POST">
+          <div class="form-row">
+            <input name="name" id="msgName" class="input hover-target" placeholder="Your Name" required />
+            <input name="email" id="msgEmail" class="input hover-target" placeholder="Your Email" required />
+          </div>
+          <textarea name="message" id="msgText" rows="6" class="input hover-target" placeholder="Your Message" required></textarea>
+          <button type="submit" class="btn send hover-target" id="sendMsg">Send Message ✨</button>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section" id="terminal-section">
+    <div class="section-title">System Terminal</div>
+    <div class="terminal terminal-bottom hover-target" onclick="document.getElementById('bottomTermInput').focus()">
+        <div id="bottomTermHistory">
+            <div><span style="color:var(--muted)">Secure connection established. Type <span style="color:var(--accent)">help</span> for available commands.</span></div>
+        </div>
+        <div class="term-input-row">
+            <span class="term-prompt">guest@rupam:~$</span>
+            <input type="text" id="bottomTermInput" autocomplete="off" spellcheck="false">
+        </div>
+    </div>
+  </section>
+
+  <button class="back-top hover-target" id="backTop" aria-hidden="true">↑ Top</button>
+
+  <footer><small>© <span id="year"></span> Rupam Dey — Built with ❤️</small></footer>
+</div>
+
+<script>
+/* Setup & Theme */
+const root = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('theme') || 'dark';
+root.setAttribute('data-theme', savedTheme);
+themeToggle.addEventListener('click', () => {
+  const current = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', current);
+  localStorage.setItem('theme', current);
+});
+
+/* Side Navigation Logic */
+const logoBtn = document.getElementById('logoBtn');
+const sideNav = document.getElementById('sideNav');
+const closeNav = document.getElementById('closeNav');
+const navOverlay = document.getElementById('navOverlay');
+const navItems = document.querySelectorAll('.nav-item');
+
+function toggleNav() {
+    sideNav.classList.toggle('active');
+    navOverlay.classList.toggle('active');
+}
+logoBtn.addEventListener('click', toggleNav);
+closeNav.addEventListener('click', toggleNav);
+navOverlay.addEventListener('click', toggleNav);
+navItems.forEach(item => {
+    item.addEventListener('click', () => {
+        toggleNav();
+    });
+});
+
+/* Sound Design */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function initAudio() { if (!audioCtx) { audioCtx = new AudioContext(); } if (audioCtx.state === 'suspended') { audioCtx.resume(); } }
+function playTickSound() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, audioCtx.currentTime); 
+    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.05);
+    gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+}
+document.body.addEventListener('click', initAudio, { once: true });
+document.body.addEventListener('mousemove', initAudio, { once: true });
+
+/* ----------------------------------------------------
+   TOP TERMINAL LOGIC: Pure Typewriter Effect
+   ---------------------------------------------------- */
+const messages = [
+  "console.log('Hello! I build web & ML projects.')",
+  "console.log('Fetching live GitHub data...')",
+  "console.log('Open to collaborate ✨')"
+];
+let mi=0, pi=0, del=false;
+const typeEl = document.getElementById('typeText');
+const blinkEl = document.getElementById('blink');
+
+function typeTick() {
+  const cur = messages[mi];
+  if(!del){ 
+      pi++; 
+      typeEl.textContent = cur.slice(0,pi); 
+      if(pi===cur.length){ 
+          del=true; 
+          setTimeout(typeTick, 2000); // Pause before deleting
+          return; 
+      } 
+  }
+  else { 
+      pi--; 
+      typeEl.textContent = cur.slice(0,pi); 
+      if(pi===0){ 
+          del=false; 
+          mi = (mi + 1) % messages.length; // Loop infinitely
+      } 
+  }
+  setTimeout(typeTick, del?40:80);
+}
+setTimeout(typeTick, 500);
+
+/* Blink cursor for top terminal */
+setInterval(()=>{
+    if(blinkEl) {
+        blinkEl.style.visibility = (blinkEl.style.visibility === 'hidden') ? 'visible' : 'hidden';
+    }
+},600);
+
+
+/* ----------------------------------------------------
+   BOTTOM TERMINAL LOGIC: Dedicated Interactive Command Line
+   ---------------------------------------------------- */
+const bottomTermInput = document.getElementById('bottomTermInput');
+const bottomTermHistory = document.getElementById('bottomTermHistory');
+
+bottomTermInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const cmd = bottomTermInput.value.trim().toLowerCase();
+        
+        const echoLine = document.createElement('div');
+        echoLine.innerHTML = `<span class="term-prompt">guest@rupam:~$</span> ${cmd}`;
+        bottomTermHistory.appendChild(echoLine);
+        
+        const responseLine = document.createElement('div');
+        switch(cmd) {
+            case 'help': responseLine.textContent = "Available commands: help, skills, whoami, clear, fetch repos"; break;
+            case 'skills': responseLine.textContent = "> Python, C/C++, HTML/CSS/JS, ML Algorithms"; break;
+            case 'whoami': responseLine.textContent = "Rupam Dey - Full Stack Developer & CSE Student"; break;
+            case 'fetch repos': responseLine.innerHTML = "Connecting to GitHub API...<br><span style='color:var(--accent)'>[OK] Projects updated successfully.</span>"; break;
+            case 'clear': 
+                bottomTermHistory.innerHTML = ""; 
+                break;
+            case '': break;
+            default: responseLine.textContent = `Command not found: ${cmd}`;
+        }
+        
+        if (cmd !== 'clear' && cmd !== '') bottomTermHistory.appendChild(responseLine);
+        
+        bottomTermInput.value = '';
+        bottomTermHistory.scrollTop = bottomTermHistory.scrollHeight; // Auto-scroll to bottom
+    }
+});
+
+/* ----------------------------------------------------
+   🔄 LIVE GITHUB API FETCH LOGIC
+   ---------------------------------------------------- */
+async function fetchGitHubProjects() {
+    const slider = document.getElementById('projectSlider');
+    try {
+        // Fetch repositories sorted by most recently updated
+        const response = await fetch('https://api.github.com/users/RupamDey12/repos?sort=updated&per_page=6');
+        const repos = await response.json();
+        
+        slider.innerHTML = ''; // Clear the loading text
+        
+        repos.forEach((repo, i) => {
+            const slide = document.createElement('div');
+            slide.className = 'slide';
+            
+            // Handle null descriptions
+            const desc = repo.description ? repo.description : 'A recent coding project from my GitHub.';
+            
+            slide.innerHTML = `
+                <div class="card tilt hover-target" data-index="${i}" style="height: 100%; display: flex; flex-direction: column;">
+                    <h4 title="${repo.name}">${repo.name}</h4>
+                    <p style="flex-grow: 1;">${desc}</p>
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <a href="${repo.html_url}" target="_blank" class="btn hover-target" style="padding: 6px 12px; font-size: 13px; margin: 0;">View Code</a>
+                        ${repo.homepage ? `<a href="${repo.homepage}" target="_blank" class="btn hover-target" style="padding: 6px 12px; font-size: 13px; margin: 0;">Live Site</a>` : ''}
+                    </div>
+                </div>
+            `;
+            slider.appendChild(slide);
+        });
+
+        // Re-attach the 3D tilt effects to the new dynamically generated cards
+        document.querySelectorAll('.card.tilt').forEach(n => applyTilt(n, 6));
+        
+        // Re-attach custom cursor glow and hover sounds to the new buttons
+        document.querySelectorAll('.hover-target, a, button, .btn, .card').forEach(el=>{
+            el.addEventListener('mouseenter', ()=>{ cursor.style.transform='translate(-50%,-50%) scale(1.6)'; playTickSound(); });
+            el.addEventListener('mouseleave', ()=>{ cursor.style.transform='translate(-50%,-50%) scale(1)'; });
+        });
+
+    } catch (error) {
+        slider.innerHTML = '<div style="padding: 20px; color: #ff4a4a;">Failed to load projects. Please visit my GitHub directly!</div>';
+        console.error('Error fetching GitHub repos:', error);
+    }
+}
+// Trigger the fetch as soon as the script loads
+fetchGitHubProjects();
+
+
+/* Sorting Visualizer */
+const algoContainer = document.getElementById('algoContainer');
+let bars = [];
+const numBars = 15;
+function initAlgo() {
+    algoContainer.innerHTML = ''; bars = [];
+    for (let i = 0; i < numBars; i++) {
+        let val = Math.floor(Math.random() * 50) + 10;
+        let bar = document.createElement('div'); bar.classList.add('algo-bar');
+        bar.style.height = `${val}px`; algoContainer.appendChild(bar);
+        bars.push({ el: bar, val: val });
+    }
+}
+async function bubbleSort() {
+    for (let i = 0; i < bars.length; i++) {
+        for (let j = 0; j < bars.length - i - 1; j++) {
+            bars[j].el.style.background = 'var(--accent)'; bars[j+1].el.style.background = 'var(--accent)';
+            await new Promise(r => setTimeout(r, 100));
+            if (bars[j].val > bars[j+1].val) {
+                let temp = bars[j].val; bars[j].val = bars[j+1].val; bars[j+1].val = temp;
+                bars[j].el.style.height = `${bars[j].val}px`; bars[j+1].el.style.height = `${bars[j+1].val}px`;
+            }
+            bars[j].el.style.background = 'var(--muted)'; bars[j+1].el.style.background = 'var(--muted)';
+        }
+        bars[bars.length - 1 - i].el.style.background = 'var(--accent)';
+    }
+    setTimeout(() => { initAlgo(); bubbleSort(); }, 2000);
+}
+initAlgo(); bubbleSort();
+
+/* Background Particles */
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = innerWidth, H = canvas.height = innerHeight;
+let particles = [];
+function rand(min,max){return Math.random()*(max-min)+min}
+function createParticles(){
+  particles = []; const count = Math.max(40, Math.floor((W*H)/120000));
+  for(let i=0;i<count;i++) particles.push({x:rand(0,W), y:rand(0,H), r:rand(0.6,2.2), vx:rand(-0.3,0.3), vy:rand(-0.15,0.4), life:rand(600,1200)});
+}
+function resize(){ W=canvas.width=innerWidth; H=canvas.height=innerHeight; createParticles(); }
+addEventListener('resize', resize);
+function drawBg(){
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createRadialGradient(W*0.7,H*0.2,10,W*0.5,H*0.5,Math.max(W,H));
+  g.addColorStop(0,'rgba(0,234,255,0.03)'); g.addColorStop(1,'transparent');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  for(let p of particles){
+    p.x += p.vx; p.y += p.vy; p.life--;
+    if(p.x < -20 || p.x > W+20 || p.y < -20 || p.y > H+20 || p.life < 0){ p.x = rand(0,W); p.y = -10; p.life = rand(600,1200); }
+    ctx.beginPath(); ctx.fillStyle = 'rgba(0,234,255,0.06)'; ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+  }
+  requestAnimationFrame(drawBg);
+}
+resize(); drawBg();
+
+/* 3D Tilt function helper */
+function applyTilt(el, strength=12){
+  el.addEventListener('mousemove', e=>{
+    const r = el.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+    const dy = (e.clientY - (r.top + r.height/2)) / (r.height/2);
+    el.style.transform = `rotateY(${dx*strength}deg) rotateX(${dy*-strength}deg) scale(1.02)`;
+    el.style.boxShadow = `0 20px 40px rgba(0,0,0,0.45), 0 0 32px rgba(0,234,255,0.06)`;
+  });
+  el.addEventListener('mouseleave', ()=>{ el.style.transform=''; el.style.boxShadow=''; });
+}
+
+/* Interactions */
+const cursor = document.getElementById('customCursor');
+document.addEventListener('mousemove', e=>{ cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+document.querySelectorAll('.hover-target, a, button, .btn, .icon-btn, .card').forEach(el=>{
+  el.addEventListener('mouseenter', ()=>{ cursor.style.transform='translate(-50%,-50%) scale(1.6)'; playTickSound(); });
+  el.addEventListener('mouseleave', ()=>{ cursor.style.transform='translate(-50%,-50%) scale(1)'; });
+});
+document.querySelectorAll('.tilt').forEach(n=>applyTilt(n,8));
+
+/* Utils */
+window.addEventListener('scroll', ()=>{ document.getElementById('backTop').style.display = window.scrollY > 400 ? 'block' : 'none'; });
+document.getElementById('backTop').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+document.getElementById('year').textContent = new Date().getFullYear();
+function scrollToSection(sel){ document.querySelector(sel).scrollIntoView({behavior:'smooth'}); }
+</script>
+</body>
+</html>
